@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة أسعار آركيد ستور</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; font-weight: bold; }
+        label { font-weight: bold; margin-top: 10px; display: block; color: #555; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #e74c3c; color: white; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #c0392b; }
+        .result-box { margin-top: 25px; padding: 20px; background-color: #ecf0f1; border-radius: 8px; border-right: 5px solid #e74c3c; display: none; }
+        .result-box p { margin: 10px 0; font-size: 16px; }
+        .final-price { font-size: 22px; font-weight: bold; color: #27ae60; border-top: 2px solid #ddd; padding-top: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎮 حاسبة أسعار آركيد ستور</h2>
+    
+    <label>نوع المنتج:</label>
+    <select id="productType" onchange="toggleShipping()">
+        <option value="digital">منتج رقمي (شحن، بطاقات)</option>
+        <option value="physical">منتج ملموس (معدات، عجلات قيادة)</option>
+    </select>
+
+    <label>سعر التكلفة الأساسي:</label>
+    <input type="number" id="costPrice" placeholder="أدخل التكلفة" required>
+
+    <label>سعر الصرف (إن وجد، وإلا اتركه 1):</label>
+    <input type="number" id="exchangeRate" value="1" required>
+
+    <label>نسبة الربح المطلوبة (%):</label>
+    <input type="number" id="profitMargin" placeholder="مثال: 20" required>
+
+    <label>عمولة بوابة الدفع (%):</label>
+    <input type="number" id="gatewayFee" placeholder="مثال: 2.5" value="0">
+
+    <div id="shippingDiv" style="display: none;">
+        <label>تكلفة الشحن:</label>
+        <input type="number" id="shippingCost" placeholder="أدخل تكلفة الشحن" value="0">
+    </div>
+
+    <button onclick="calculate()">إحسب السعر النهائي</button>
+
+    <div class="result-box" id="resultBox">
+        <p>التكلفة بالعملة المحلية: <span id="resLocalCost">0</span></p>
+        <p id="resShippingText" style="display:none;">تكلفة الشحن: <span id="resShipping">0</span></p>
+        <p>الربح الصافي: <span id="resProfit">0</span></p>
+        <p>عمولة البوابة: <span id="resGateway">0</span></p>
+        <p class="final-price">سعر البيع للعميل: <span id="resFinal">0</span></p>
+    </div>
+</div>
+
+<script>
+    function toggleShipping() {
+        var type = document.getElementById("productType").value;
+        document.getElementById("shippingDiv").style.display = type === "physical" ? "block" : "none";
+    }
+
+    function calculate() {
+        var costPrice = parseFloat(document.getElementById("costPrice").value) || 0;
+        var exchangeRate = parseFloat(document.getElementById("exchangeRate").value) || 1;
+        var profitMargin = parseFloat(document.getElementById("profitMargin").value) || 0;
+        var gatewayFee = parseFloat(document.getElementById("gatewayFee").value) || 0;
+        var shippingCost = document.getElementById("productType").value === "physical" ? (parseFloat(document.getElementById("shippingCost").value) || 0) : 0;
+
+        var localCost = costPrice * exchangeRate;
+        var profitAmount = localCost * (profitMargin / 100);
+        var basePrice = localCost + shippingCost + profitAmount;
+        
+        var finalPrice = basePrice / (1 - (gatewayFee / 100));
+        var gatewayAmount = finalPrice - basePrice;
+
+        document.getElementById("resLocalCost").innerText = localCost.toFixed(2);
+        document.getElementById("resProfit").innerText = profitAmount.toFixed(2);
+        document.getElementById("resGateway").innerText = gatewayAmount.toFixed(2);
+        document.getElementById("resFinal").innerText = finalPrice.toFixed(2);
+        
+        if(shippingCost > 0) {
+            document.getElementById("resShippingText").style.display = "block";
+            document.getElementById("resShipping").innerText = shippingCost.toFixed(2);
+        } else {
+            document.getElementById("resShippingText").style.display = "none";
+        }
+
+        document.getElementById("resultBox").style.display = "block";
+    }
+</script>
+
+</body>
+</html>
