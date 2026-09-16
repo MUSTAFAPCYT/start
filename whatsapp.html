@@ -1,42 +1,159 @@
-// --- قائمة منتجات آركيد ستور ---
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسعير آركيد ستور - Arcade Store</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        label { font-weight: bold; margin-top: 15px; display: block; color: #444; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; color: white; }
+        .btn-calc { background-color: #3498db; }
+        .btn-calc:hover { background-color: #2980b9; }
+        .btn-copy { background-color: #27ae60; display: none; }
+        .btn-copy:hover { background-color: #219150; }
+        textarea { width: 100%; height: 160px; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; resize: none; display: none; box-sizing: border-box; margin-top: 15px; background-color: #fcfcfc;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📱 تسعير منتج للواتساب</h2>
+        
+        <label>سعر الصرف (لليوم):</label>
+        <input type="number" id="exchangeRate" value="1">
+        
+        <label>نسبة الربح المطلوبة (%):</label>
+        <input type="number" id="profitMargin" value="0">
+
+        <label>اختر القسم:</label>
+        <select id="categorySelect" onchange="updateProducts()">
+            <option value="">-- اختر القسم أولاً --</option>
+        </select>
+
+        <label>اختر المنتج:</label>
+        <select id="productSelect">
+            <option value="">-- بانتظار اختيار القسم --</option>
+        </select>
+
+        <button class="btn-calc" onclick="generateMessage()">تجهيز رسالة المنتج 🚀</button>
+
+        <textarea id="output" readonly></textarea>
+        <button class="btn-copy" id="copyBtn" onclick="copyText()">نسخ للواتساب 📋</button>
+    </div>
+
+    <script>
+        // --- قائمة منتجات آركيد ستور ---
         const productsData = [
-            { category: "🔫 شحن ألعاب الشوتر والباتل رويال", items: [
-                { name: "ببجي - 60 شدة", baseCost: 1.00 },
-                { name: "ببجي - 325 شدة", baseCost: 5.00 },
-                { name: "فري فاير - 100 جوهرة", baseCost: 1.00 },
-                { name: "بلود سترايك - باقة أساسية", baseCost: 1.00 },
-                { name: "كول أوف ديوتي - 80 CP", baseCost: 1.00 }
+            { category: "🎮 شحن الألعاب", items: [
+                { name: "فري فاير", baseCost: 1.00 },
+                { name: "ببجي", baseCost: 1.00 },
+                { name: "بيس", baseCost: 1.00 },
+                { name: "موبايل ليجنزر", baseCost: 1.00 },
+                { name: "بلودسترايك", baseCost: 1.00 },
+                { name: "كول اوف ديوتي", baseCost: 1.00 },
+                { name: "كلاش كلانس", baseCost: 1.00 },
+                { name: "كلاش رويال", baseCost: 1.00 },
+                { name: "براول ستارز", baseCost: 1.00 },
+                { name: "فيفا", baseCost: 1.00 },
+                { name: "ربولوكس", baseCost: 1.00 }
             ]},
-            { category: "⚔️ ألعاب الاستراتيجية والموبايل", items: [
-                { name: "موبايل ليجندز - 78 ماسة", baseCost: 1.00 },
-                { name: "كلاش أوف كلانس - التذكرة الذهبية", baseCost: 7.00 },
-                { name: "كلاش رويال - Pass Royale", baseCost: 7.00 },
-                { name: "براول ستارز - Brawl Pass", baseCost: 7.00 },
-                { name: "روبلوكس - 400 Robux", baseCost: 5.00 }
+            { category: "💳 البطاقات الرقمية", items: [
+                { name: "بطاقات ريزر", baseCost: 1.00 },
+                { name: "بطاقات ايتونز", baseCost: 1.00 },
+                { name: "بطاقات ستيم", baseCost: 1.00 },
+                { name: "بطاقات بلاستشين", baseCost: 1.00 },
+                { name: "بطاقات اكس بوكس", baseCost: 1.00 }
             ]},
-            { category: "⚽ ألعاب الرياضة", items: [
-                { name: "بيس (eFootball) - 1040 كوينز", baseCost: 10.00 },
-                { name: "فيفا - 1050 نقطة", baseCost: 10.00 }
+            { category: "🏦 البطاقات البنكية", items: [
+                { name: "فيزا كارد", baseCost: 1.00 },
+                { name: "ماشترد كارد", baseCost: 1.00 }
             ]},
-            { category: "💳 البطاقات الرقمية ومتاجر الألعاب", items: [
-                { name: "بطاقة ريزر جولد - 10 دولار", baseCost: 10.00 },
-                { name: "بطاقة آيتونز - 10 دولار", baseCost: 10.00 },
-                { name: "بطاقة ستيم - 10 دولار", baseCost: 10.00 },
-                { name: "بطاقة بلايستيشن - 10 دولار", baseCost: 10.00 },
-                { name: "بطاقة إكس بوكس - 10 دولار", baseCost: 10.00 }
-            ]},
-            { category: "🏦 البطاقات البنكية مسبقة الدفع", items: [
-                { name: "فيزا كارد - فئة 10 دولار", baseCost: 11.00 },
-                { name: "ماستر كارد - فئة 10 دولار", baseCost: 11.00 }
-            ]},
-            { category: "🤖 الاشتراكات والتطبيقات", items: [
-                { name: "شحن عملات تيك توك", baseCost: 1.00 },
-                { name: "اشتراك ديسكورد نايترو", baseCost: 10.00 },
-                { name: "اشتراك شات جي بي تي (ChatGPT Plus)", baseCost: 20.00 },
-                { name: "اشتراك كلاود (Claude Pro)", baseCost: 20.00 },
-                { name: "اشتراك جيمني (Gemini Advanced)", baseCost: 20.00 }
+            { category: "📱 التطبيقات والاشتراكات", items: [
+                { name: "تيك توك", baseCost: 1.00 },
+                { name: "ديسكورد", baseCost: 1.00 },
+                { name: "اشتراك جمناي", baseCost: 1.00 },
+                { name: "اشتراك شات جي بي تي", baseCost: 1.00 },
+                { name: "اشتراك كلاود", baseCost: 1.00 }
             ]},
             { category: "📡 خدمات الإنترنت", items: [
-                { name: "تجديد باقة ستارلينك", baseCost: 50.00 }
+                { name: "استارلينك", baseCost: 1.00 }
             ]}
         ];
+
+        const catSelect = document.getElementById('categorySelect');
+        const prodSelect = document.getElementById('productSelect');
+
+        // تحميل الأقسام
+        window.onload = () => {
+            productsData.forEach((cat, index) => {
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = cat.category;
+                catSelect.appendChild(opt);
+            });
+        };
+
+        // تحديث المنتجات
+        function updateProducts() {
+            prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+            let catIndex = catSelect.value;
+            if(catIndex !== "") {
+                productsData[catIndex].items.forEach((item, index) => {
+                    let opt = document.createElement('option');
+                    opt.value = index;
+                    opt.innerHTML = item.name;
+                    prodSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // تجهيز الرسالة
+        function generateMessage() {
+            let catIndex = catSelect.value;
+            let prodIndex = prodSelect.value;
+            
+            if(catIndex === "" || prodIndex === "") {
+                alert("الرجاء اختيار القسم والمنتج أولاً!");
+                return;
+            }
+
+            let item = productsData[catIndex].items[prodIndex];
+            let exRate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+            let margin = parseFloat(document.getElementById('profitMargin').value) || 0;
+
+            let localCost = item.baseCost * exRate;
+            let finalPrice = Math.ceil(localCost + (localCost * (margin / 100)));
+
+            let msg = `🎮 *آركيد ستور - Arcade Store* 🎮\n\n`;
+            msg += `متوفر لدينا الآن:\n`;
+            msg += `🔸 *${item.name}*\n\n`;
+            msg += `💵 السعر: *${finalPrice}* ج\n\n`;
+            msg += `للطلب والاستفسار، تواصل معنا على الخاص! 💬`;
+
+            let outBox = document.getElementById('output');
+            outBox.value = msg;
+            outBox.style.display = 'block';
+
+            let btn = document.getElementById('copyBtn');
+            btn.style.display = 'block';
+            btn.innerText = 'نسخ للواتساب 📋';
+            btn.style.backgroundColor = '#27ae60';
+        }
+
+        // نسخ النص
+        function copyText() {
+            let outBox = document.getElementById('output');
+            outBox.select();
+            outBox.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(outBox.value);
+            
+            let btn = document.getElementById('copyBtn');
+            btn.innerText = 'تم النسخ بنجاح! ✔️';
+            btn.style.backgroundColor = '#2ecc71';
+        }
+    </script>
+</body>
+</html>
