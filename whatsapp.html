@@ -15,7 +15,7 @@
         .btn-calc:hover { background-color: #2980b9; }
         .btn-copy { background-color: #27ae60; display: none; }
         .btn-copy:hover { background-color: #219150; }
-        textarea { width: 100%; height: 160px; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; resize: none; display: none; box-sizing: border-box; margin-top: 15px; background-color: #fcfcfc;}
+        textarea { width: 100%; height: 210px; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; resize: none; display: none; box-sizing: border-box; margin-top: 15px; background-color: #fcfcfc;}
     </style>
 </head>
 <body>
@@ -37,6 +37,12 @@
         <select id="productSelect">
             <option value="">-- بانتظار اختيار القسم --</option>
         </select>
+
+        <label>رقم الواتساب (اختياري):</label>
+        <input type="text" id="waNumber" placeholder="مثال: 249xxxxxxxxx+">
+
+        <label>رابط الموقع (اختياري):</label>
+        <input type="text" id="websiteUrl" placeholder="مثال: arcadestore.com">
 
         <button class="btn-calc" onclick="generateMessage()">تجهيز رسالة المنتج 🚀</button>
 
@@ -123,6 +129,10 @@
             let item = productsData[catIndex].items[prodIndex];
             let exRate = parseFloat(document.getElementById('exchangeRate').value) || 1;
             let margin = parseFloat(document.getElementById('profitMargin').value) || 0;
+            
+            // جلب البيانات من الخانات الجديدة
+            let waNum = document.getElementById('waNumber').value.trim();
+            let webUrl = document.getElementById('websiteUrl').value.trim();
 
             let localCost = item.baseCost * exRate;
             let finalPrice = Math.ceil(localCost + (localCost * (margin / 100)));
@@ -131,7 +141,15 @@
             msg += `متوفر لدينا الآن:\n`;
             msg += `🔸 *${item.name}*\n\n`;
             msg += `💵 السعر: *${finalPrice}* ج\n\n`;
-            msg += `للطلب والاستفسار، تواصل معنا على الخاص! 💬`;
+            msg += `للطلب والاستفسار، تواصل معنا على الخاص! 💬\n`;
+            
+            // إضافة رقم الواتساب والموقع لو ما كانوا فاضيات
+            if (waNum !== "") {
+                msg += `📞 واتساب: ${waNum}\n`;
+            }
+            if (webUrl !== "") {
+                msg += `🌐 موقعنا: ${webUrl}\n`;
+            }
 
             let outBox = document.getElementById('output');
             outBox.value = msg;
