@@ -3,103 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة أسعار آركيد ستور للواتساب</title>
+    <title>تسعير آركيد ستور الفردي</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
-        label { font-weight: bold; margin-top: 15px; display: block; color: #555; }
-        input { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-generate { background-color: #3498db; color: white; }
-        .btn-generate:hover { background-color: #2980b9; }
-        .btn-copy { background-color: #27ae60; color: white; display: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        label { font-weight: bold; margin-top: 15px; display: block; color: #444; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; color: white; }
+        .btn-calc { background-color: #3498db; }
+        .btn-calc:hover { background-color: #2980b9; }
+        .btn-copy { background-color: #27ae60; display: none; }
         .btn-copy:hover { background-color: #219150; }
-        textarea { width: 100%; height: 250px; padding: 15px; margin-top: 15px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; font-family: monospace; display: none; resize: vertical; }
+        textarea { width: 100%; height: 160px; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; resize: none; display: none; box-sizing: border-box; margin-top: 15px; background-color: #fcfcfc;}
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>📱 مولد أسعار آركيد ستور للواتساب</h2>
-    
-    <label>سعر الصرف لليوم (مثلاً سعر الدولار):</label>
-    <input type="number" id="exchangeRate" placeholder="أدخل سعر الصرف" value="1">
-
-    <label>نسبة الربح الإضافية (%):</label>
-    <input type="number" id="profitMargin" placeholder="مثال: 15" value="0">
-
-    <button class="btn-generate" onclick="generateList()">تحديث وتوليد القائمة</button>
-
-    <textarea id="whatsappOutput" readonly></textarea>
-    <button class="btn-copy" id="copyBtn" onclick="copyToWhatsApp()">نسخ للواتساب 📋</button>
-</div>
-
-<script>
-    // --- هنا تقدر تعدل منتجاتك وأسعار التكلفة الأساسية الخاصة بها ---
-    const products = [
-        { category: "🔥 قسم شحن ببجي موبايل", items: [
-            { name: "60 شدة", baseCost: 0.99 },
-            { name: "325 شدة", baseCost: 4.99 },
-            { name: "660 شدة", baseCost: 9.99 }
-        ]},
-        { category: "💎 قسم شحن فري فاير", items: [
-            { name: "100 جوهرة", baseCost: 0.99 },
-            { name: "210 جوهرة", baseCost: 1.99 },
-            { name: "530 جوهرة", baseCost: 4.99 }
-        ]},
-        { category: "🏎️ معدات السيم ريسنق (حسب الطلب)", items: [
-            { name: "عجلة قيادة Logitech G29", baseCost: 250 },
-            { name: "عجلة قيادة Logitech G27 (مستعمل)", baseCost: 150 }
-        ]}
-    ];
-
-    function generateList() {
-        var exchangeRate = parseFloat(document.getElementById("exchangeRate").value) || 1;
-        var profitMargin = parseFloat(document.getElementById("profitMargin").value) || 0;
+    <div class="container">
+        <h2>📱 تسعير منتج للواتساب</h2>
         
-        // تجهيز ترويسة الرسالة للواتساب
-        var date = new Date().toLocaleDateString('ar-EG');
-        var text = "🎮 *قائمة أسعار آركيد ستور - Arcade Store* 🎮\n";
-        text += "📅 تحديث اليوم: " + date + "\n\n";
+        <label>سعر الصرف (لليوم):</label>
+        <input type="number" id="exchangeRate" value="1">
+        
+        <label>نسبة الربح المطلوبة (%):</label>
+        <input type="number" id="profitMargin" value="0">
 
-        // حساب الأسعار وتوليد النص
-        products.forEach(group => {
-            text += "*" + group.category + "*\n";
-            group.items.forEach(item => {
-                var localCost = item.baseCost * exchangeRate;
-                var finalPrice = localCost + (localCost * (profitMargin / 100));
-                // تقريب السعر لأقرب رقم صحيح لتجنب الكسور في الواتساب
-                finalPrice = Math.ceil(finalPrice);
-                
-                text += "🔸 " + item.name + " = *" + finalPrice + "* ج\n";
+        <label>اختر القسم:</label>
+        <select id="categorySelect" onchange="updateProducts()">
+            <option value="">-- اختر القسم أولاً --</option>
+        </select>
+
+        <label>اختر المنتج:</label>
+        <select id="productSelect">
+            <option value="">-- بانتظار اختيار القسم --</option>
+        </select>
+
+        <button class="btn-calc" onclick="generateMessage()">تجهيز رسالة المنتج 🚀</button>
+
+        <textarea id="output" readonly></textarea>
+        <button class="btn-copy" id="copyBtn" onclick="copyText()">نسخ للواتساب 📋</button>
+    </div>
+
+    <script>
+        // --- قائمة منتجات آركيد ستور ---
+        const productsData = [
+            { category: "🔥 شحن ببجي موبايل", items: [
+                { name: "60 شدة", baseCost: 0.99 },
+                { name: "325 شدة", baseCost: 4.99 },
+                { name: "660 شدة", baseCost: 9.99 }
+            ]},
+            { category: "💎 شحن فري فاير", items: [
+                { name: "100 جوهرة", baseCost: 0.99 },
+                { name: "210 جوهرة", baseCost: 1.99 },
+                { name: "530 جوهرة", baseCost: 4.99 }
+            ]},
+            { category: "🏎️ معدات السيم ريسنق", items: [
+                { name: "عجلة قيادة Logitech G29", baseCost: 250 },
+                { name: "عجلة قيادة Logitech G27", baseCost: 150 }
+            ]}
+        ];
+
+        const catSelect = document.getElementById('categorySelect');
+        const prodSelect = document.getElementById('productSelect');
+
+        // تحميل الأقسام عند فتح الصفحة
+        window.onload = () => {
+            productsData.forEach((cat, index) => {
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = cat.category;
+                catSelect.appendChild(opt);
             });
-            text += "\n"; // سطر فارغ بين الأقسام
-        });
+        };
 
-        text += "للطلب والاستفسار، تواصل معنا على الخاص! 💬";
+        // تحديث قائمة المنتجات عند تغيير القسم
+        function updateProducts() {
+            prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+            let catIndex = catSelect.value;
+            if(catIndex !== "") {
+                productsData[catIndex].items.forEach((item, index) => {
+                    let opt = document.createElement('option');
+                    opt.value = index;
+                    opt.innerHTML = item.name;
+                    prodSelect.appendChild(opt);
+                });
+            }
+        }
 
-        // عرض النص في المربع
-        var outputBox = document.getElementById("whatsappOutput");
-        outputBox.value = text;
-        outputBox.style.display = "block";
-        
-        // إظهار زر النسخ
-        document.getElementById("copyBtn").style.display = "block";
-        document.getElementById("copyBtn").innerText = "نسخ للواتساب 📋";
-    }
+        // حساب السعر وتوليد الرسالة
+        function generateMessage() {
+            let catIndex = catSelect.value;
+            let prodIndex = prodSelect.value;
+            
+            if(catIndex === "" || prodIndex === "") {
+                alert("الرجاء اختيار القسم والمنتج أولاً!");
+                return;
+            }
 
-    function copyToWhatsApp() {
-        var copyText = document.getElementById("whatsappOutput");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); // للموبايلات
-        navigator.clipboard.writeText(copyText.value);
-        
-        var btn = document.getElementById("copyBtn");
-        btn.innerText = "تم النسخ بنجاح! ✔️";
-        btn.style.backgroundColor = "#2ecc71";
-    }
-</script>
+            let item = productsData[catIndex].items[prodIndex];
+            let exRate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+            let margin = parseFloat(document.getElementById('profitMargin').value) || 0;
 
+            let localCost = item.baseCost * exRate;
+            let finalPrice = Math.ceil(localCost + (localCost * (margin / 100)));
+
+            // تنسيق رسالة الواتساب
+            let msg = `🎮 *آركيد ستور - Arcade Store* 🎮\n\n`;
+            msg += `متوفر لدينا الآن:\n`;
+            msg += `🔸 *${item.name}*\n\n`;
+            msg += `💵 السعر: *${finalPrice}* ج\n\n`;
+            msg += `للطلب والاستفسار، تواصل معنا على الخاص! 💬`;
+
+            let outBox = document.getElementById('output');
+            outBox.value = msg;
+            outBox.style.display = 'block';
+
+            let btn = document.getElementById('copyBtn');
+            btn.style.display = 'block';
+            btn.innerText = 'نسخ للواتساب 📋';
+            btn.style.backgroundColor = '#27ae60';
+        }
+
+        // دالة النسخ
+        function copyText() {
+            let outBox = document.getElementById('output');
+            outBox.select();
+            outBox.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(outBox.value);
+            
+            let btn = document.getElementById('copyBtn');
+            btn.innerText = 'تم النسخ بنجاح! ✔️';
+            btn.style.backgroundColor = '#2ecc71';
+        }
+    </script>
 </body>
 </html>
