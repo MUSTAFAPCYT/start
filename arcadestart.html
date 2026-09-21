@@ -428,7 +428,7 @@
             text += `🔥 *${category}* 🔥\n`;
             items.forEach(item => {
                 if (item.costInCoins > 0) { 
-                    text += `▪️ ${item.name} ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\n`;
+                    text += `\u200F▪️ \u200F${item.name}\u200F ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\n`;
                 }
             });
             text += `\n`;
