@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تسعير آركيد ستور الشامل</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .game-selector {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .game-selector label {
+            color: white;
+            font-size: 16px;
+            margin: 0;
+        }
+        .game-selector select {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+        }
+        .settings-grid, .store-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .store-info-grid {
+            background: #e8f6f3;
+            border: 1px solid #1abc9c;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 15px;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        .product-input {
+            width: 60px;
+            text-align: center;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .copy-btn {
+            display: block;
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #128C7E;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>نظام تسعير آركيد ستور</h1>
+    <div class="subtitle">حاسبة التكلفة ونسب الأرباح لجميع المنتجات</div>
+    
+    <!-- القائمة المنسدلة لاختيار اللعبة -->
+    <div class="game-selector">
+        <label>🎮 اختر القسم / المنتج:</label>
+        <select id="gameSelect" onchange="changeGame()">
+            <option value="فري فاير">فري فاير</option>
+            <option value="ببجي">ببجي</option>
+            <option value="بيس">بيس (eFootball)</option>
+            <option value="موبايل ليجندز">موبايل ليجندز</option>
+            <option value="كول اوف ديوتي">كول اوف ديوتي</option>
+            <option value="فيزا وماستركارد">فيزا وماستركارد</option>
+            <option value="فيفا">فيفا</option>
+            <option value="تيك توك">تيك توك</option>
+        </select>
+    </div>
+
+    <!-- بيانات المتجر -->
+    <div class="store-info-grid">
+        <div class="input-group">
+            <label>رابط الموقع</label>
+            <input type="text" id="websiteUrl" value="arcadestore.net" oninput="saveDataLocally()">
+        </div>
+        <div class="input-group">
+            <label>رقم الواتساب</label>
+            <input type="text" id="whatsappNum" value="" placeholder="+249..." oninput="saveDataLocally()">
+        </div>
+    </div>
+
+    <!-- إعدادات الشراء وسعر الصرف -->
+    <div class="settings-grid">
+        <div class="input-group">
+            <label>إجمالي الشراء بالدولار ($)</label>
+            <input type="number" id="usdPaid" value="100" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>العملات المستلمة (في المنصة)</label>
+            <input type="number" id="coinsReceived" value="10000" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>سعر الصرف اليومي (محلي)</label>
+            <input type="number" id="exchangeRate" value="2500" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>تكلفة العملة الواحدة ($)</label>
+            <input type="text" id="coinCostDisplay" disabled style="background:#e8e8e8; font-weight:bold;">
+        </div>
+    </div>
+
+    <!-- جدول المنتجات -->
+    <table id="pricingTable">
+        <thead>
+            <tr>
+                <th>المنتج</th>
+                <th>تكلفة المنصة</th>
+                <th>التكلفة ($)</th>
+                <th>التكلفة المحلي</th>
+                <th>الربح (%)</th>
+                <th>سعر البيع</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- سيتم تعبئة البيانات هنا -->
+        </tbody>
+    </table>
+
+    <!-- زر نسخ القائمة -->
+    <button class="copy-btn" onclick="copyToWhatsApp()">📋 نسخ عروض القسم المحدد للواتساب</button>
+</div>
+
+<script>
+    // قاعدة البيانات الشاملة للمنتجات حسب طلبك
+    let allGamesData = {
+        "فري فاير": [
+            { name: '110 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: '210 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: '530 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: '1080 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: '2200 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: 'weekly membership', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: 'monthly membership', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
+            { name: 'إنزال جوي 1 دولار', costInCoins: 0, profitMargin: 15, category: 'شحن عبر الحساب' },
+            { name: 'إنزال جوي 2 دولار', costInCoins: 0, profitMargin: 15, category: 'شحن عبر الحساب' },
+            { name: 'إشتراك إسبوعي مخفف', costInCoins: 0, profitMargin: 15, category: 'شحن عبر الحساب' }
+        ],
+        "ببجي": [
+            { name: '60 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: '325 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: '660 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: '1800 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: '3850 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: '8100 uc', costInCoins: 0, profitMargin: 15, category: 'شحن الشدات' },
+            { name: 'بطاقة النخبة بلس LV1-100', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'بطاقة النخبة LV1-50', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم (شهر واحد)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم (6 أشهر)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم (12 شهرًا)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم بلس (شهر واحد)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم بلس (6 أشهر)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'برايم بلس (12 شهرًا)', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة الشراء الأولى', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة العروض الأسبوعية 1', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة مواد الأسلحة النارية القابلة للترقية', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة قيمة شعار أسطوري أسبوعية', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة العروض الأسبوعية 2', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' },
+            { name: 'حزمة شعار أسطوري', costInCoins: 0, profitMargin: 15, category: 'الباقات والبطاقات' }
+        ],
+        "بيس": [
+            { name: '130 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '300 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '550 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '750 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '1040 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '2130 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '3250 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '5700 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '12800 coin', costInCoins: 0, profitMargin: 15, category: 'الشحن العادي' },
+            { name: '260 coin', costInCoins: 0, profitMargin: 15, category: 'عروض خاصة' },
+            { name: '840 coin', costInCoins: 0, profitMargin: 15, category: 'عروض خاصة' },
+            { name: '1630 coin', costInCoins: 0, profitMargin: 15, category: 'عروض خاصة' }
+        ],
+        "موبايل ليجندز": [
+            { name: '50+5', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لاول مرة' },
+            { name: '150+15', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لاول مرة' },
+            { name: '250+25', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لاول مرة' },
+            { name: '500+65', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لاول مرة' },
+            { name: '78+8', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '156+16', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '234+23', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '625+81', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '1860+335', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '3099+589', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '4649+883', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: '7740+1548', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+            { name: 'حزمة الازهار', costInCoins: 0, profitMargin: 15, category: 'الباقات' },
+            { name: 'Weekly Pass', costInCoins: 0, profitMargin: 15, category: 'الباقات' }
+        ],
+        "كول اوف ديوتي": [
+            { name: '80 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: '420 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: '880 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: '2400 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: '5000 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: '10800 cp', costInCoins: 0, profitMargin: 15, category: 'شحن CP' },
+            { name: 'الامداد الاسبوعي', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' },
+            { name: 'الامداد الشهري', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' },
+            { name: 'تذكرة القتال 10 دولار', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' },
+            { name: 'عرض خاص 1 دولار', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' },
+            { name: 'عرض خاصة 5 دولار', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' },
+            { name: 'عرض خاص 10 دولار', costInCoins: 0, profitMargin: 15, category: 'الباقات والعروض' }
+        ],
+        "فيزا وماستركارد": [
+            { name: 'أستخراج بطاقة', costInCoins: 0, profitMargin: 15, category: 'الخدمات المصرفية' },
+            { name: 'تغذية البطاقة', costInCoins: 0, profitMargin: 15, category: 'الخدمات المصرفية' }
+        ],
+        "فيفا": [
+            { name: '40 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '100 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '500+20 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '1000+70 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '2000+200 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '5000+750 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: '10000+2000 نقطة', costInCoins: 0, profitMargin: 15, category: 'النقاط' },
+            { name: 'بطاقة الامداد الشهرية', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' },
+            { name: 'بطاقة الامداد الشهرية النخبوية', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' },
+            { name: 'معزز A', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' },
+            { name: 'معزز B', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' },
+            { name: 'معزز C', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' },
+            { name: 'معزز D', costInCoins: 0, profitMargin: 15, category: 'الباقات والمعززات' }
+        ],
+        "تيك توك": [
+            { name: '30 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '70 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '100 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '200 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '350 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '500 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '700 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '1000 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '1500 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '2000 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '5000 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' },
+            { name: '10000 coin', costInCoins: 0, profitMargin: 15, category: 'شحن العملات' }
+        ]
+    };
+
+    let currentGame = "فري فاير"; // اللعبة الافتراضية
+
+    // استرجاع البيانات - تم تغيير مفتاح الحفظ لـ v2 عشان ينزل الداتا الجديدة
+    function loadSavedData() {
+        const savedData = localStorage.getItem('arcadeStore_Dashboard_v2');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            document.getElementById('usdPaid').value = data.usdPaid || 100;
+            document.getElementById('coinsReceived').value = data.coinsReceived || 10000;
+            document.getElementById('exchangeRate').value = data.exchangeRate || 2500;
+            document.getElementById('websiteUrl').value = data.websiteUrl || 'arcadestore.net';
+            document.getElementById('whatsappNum').value = data.whatsappNum || '';
+            
+            // دمج البيانات
+            if (data.allGamesData) {
+                // التأكد من استرجاع البيانات المحفوظة للألعاب الموجودة فقط
+                for (let game in allGamesData) {
+                    if (data.allGamesData[game] && data.allGamesData[game].length === allGamesData[game].length) {
+                        allGamesData[game] = data.allGamesData[game];
+                    }
+                }
+            }
+        }
+    }
+
+    // حفظ كل البيانات
+    function saveDataLocally() {
+        const dataToSave = {
+            usdPaid: document.getElementById('usdPaid').value,
+            coinsReceived: document.getElementById('coinsReceived').value,
+            exchangeRate: document.getElementById('exchangeRate').value,
+            websiteUrl: document.getElementById('websiteUrl').value,
+            whatsappNum: document.getElementById('whatsappNum').value,
+            allGamesData: allGamesData
+        };
+        localStorage.setItem('arcadeStore_Dashboard_v2', JSON.stringify(dataToSave));
+    }
+
+    function changeGame() {
+        currentGame = document.getElementById('gameSelect').value;
+        renderTable();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        const products = allGamesData[currentGame];
+
+        products.forEach((product, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align:right;"><strong>${product.name}</strong><br><small style="color:gray;">${product.category}</small></td>
+                <td><input type="number" class="product-input" id="coins-${index}" value="${product.costInCoins}" oninput="updateProduct(${index}, 'costInCoins')"></td>
+                <td id="usdCost-${index}">0</td>
+                <td id="localCost-${index}">0</td>
+                <td><input type="number" class="product-input" id="profit-${index}" value="${product.profitMargin}" oninput="updateProduct(${index}, 'profitMargin')">%</td>
+                <td id="finalPrice-${index}" class="highlight">0</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        calculatePrices();
+    }
+
+    function updateProduct(index, field) {
+        const inputVal = parseFloat(document.getElementById(field === 'costInCoins' ? `coins-${index}` : `profit-${index}`).value) || 0;
+        allGamesData[currentGame][index][field] = inputVal;
+        calculatePrices();
+    }
+
+    function calculatePrices() {
+        const usdPaid = parseFloat(document.getElementById('usdPaid').value) || 0;
+        const coinsReceived = parseFloat(document.getElementById('coinsReceived').value) || 1;
+        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 0;
+
+        const coinCostUsd = usdPaid / coinsReceived;
+        document.getElementById('coinCostDisplay').value = coinCostUsd.toFixed(4);
+
+        const products = allGamesData[currentGame];
+
+        products.forEach((product, index) => {
+            const usdCost = product.costInCoins * coinCostUsd;
+            document.getElementById(`usdCost-${index}`).innerText = usdCost.toFixed(2);
+
+            const localCost = usdCost * exchangeRate;
+            document.getElementById(`localCost-${index}`).innerText = Math.round(localCost).toLocaleString();
+
+            const profitPercentage = product.profitMargin / 100;
+            const finalPrice = localCost + (localCost * profitPercentage);
+            
+            product.calculatedPrice = Math.round(finalPrice);
+            document.getElementById(`finalPrice-${index}`).innerText = product.calculatedPrice.toLocaleString();
+        });
+        
+        saveDataLocally();
+    }
+
+    function copyToWhatsApp() {
+        const website = document.getElementById('websiteUrl').value || 'غير متوفر';
+        const whatsapp = document.getElementById('whatsappNum').value || 'غير متوفر';
+        
+        let text = `🎮 *عروض ${currentGame} من آركيد ستور* 🎮\n\n`;
+        
+        const products = allGamesData[currentGame];
+        const categories = {};
+        
+        products.forEach(p => {
+            if (!categories[p.category]) categories[p.category] = [];
+            categories[p.category].push(p);
+        });
+
+        for (const [category, items] of Object.entries(categories)) {
+            text += `🔥 *${category}* 🔥\n`;
+            items.forEach(item => {
+                if (item.costInCoins > 0) { 
+                    text += `▪️ ${item.name} ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\n`;
+                }
+            });
+            text += `\n`;
+        }
+
+        text += `🌐 *للطلب عبر الموقع:* ${website}\n`;
+        text += `📱 *للتواصل واتسآب:* ${whatsapp}\n`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            alert(`✅ تم نسخ عروض ${currentGame} بنجاح! جاهزة للصق في الواتساب.`);
+        }).catch(err => {
+            alert('❌ حصل خطأ في النسخ، الرجاء المحاولة مرة أخرى.');
+        });
+    }
+
+    window.onload = function() {
+        loadSavedData();
+        document.getElementById('gameSelect').value = currentGame;
+        renderTable();
+    };
+</script>
+
+</body>
+</html>
