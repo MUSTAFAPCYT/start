@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة تسعير آركيد ستور - موبايل ليجندز</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        .product-input {
+            width: 80px;
+            text-align: center;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>آركيد ستور - حاسبة موبايل ليجندز</h1>
+    
+    <!-- إعدادات المتغيرات اليومية -->
+    <div class="settings-grid">
+        <div class="input-group">
+            <label>إجمالي الشراء بالدولار ($)</label>
+            <input type="number" id="usdPaid" value="100" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>إجمالي عملات المنصة المستلمة</label>
+            <input type="number" id="coinsReceived" value="10000" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>سعر الصرف لليوم (محلي)</label>
+            <input type="number" id="exchangeRate" value="2500" oninput="calculatePrices()">
+        </div>
+        <div class="input-group">
+            <label>تكلفة العملة الواحدة ($)</label>
+            <input type="text" id="coinCostDisplay" disabled style="background:#e8e8e8; font-weight:bold;">
+        </div>
+    </div>
+
+    <!-- جدول المنتجات -->
+    <h2>جدول التسعير</h2>
+    <table id="pricingTable">
+        <thead>
+            <tr>
+                <th>المنتج</th>
+                <th>التكلفة (بعملات المنصة)</th>
+                <th>التكلفة ($)</th>
+                <th>التكلفة المحلي</th>
+                <th>هامش الربح (مبلغ ثابت)</th>
+                <th>سعر البيع النهائي</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- سيتم تعبئة البيانات عبر الجافاسكربت -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // قائمة منتجات موبايل ليجندز الأولية (يمكنك تعديلها)
+    const products = [
+        { name: 'المضاعفة 50+5', costInCoins: 100, profitMargin: 1000 },
+        { name: 'العرض 78+8', costInCoins: 150, profitMargin: 750 },
+        { name: 'العرض 156+16', costInCoins: 300, profitMargin: 1500 },
+        { name: 'Weekly Pass', costInCoins: 180, profitMargin: 1500 },
+        { name: 'حزمة الأزهار', costInCoins: 250, profitMargin: 1200 }
+    ];
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        products.forEach((product, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${product.name}</td>
+                <td><input type="number" class="product-input" id="coins-${index}" value="${product.costInCoins}" oninput="updateProduct(${index}, 'costInCoins')"></td>
+                <td id="usdCost-${index}">0</td>
+                <td id="localCost-${index}">0</td>
+                <td><input type="number" class="product-input" id="profit-${index}" value="${product.profitMargin}" oninput="updateProduct(${index}, 'profitMargin')"></td>
+                <td id="finalPrice-${index}" class="highlight">0</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        calculatePrices();
+    }
+
+    function updateProduct(index, field) {
+        const inputVal = parseFloat(document.getElementById(field === 'costInCoins' ? `coins-${index}` : `profit-${index}`).value) || 0;
+        products[index][field] = inputVal;
+        calculatePrices();
+    }
+
+    function calculatePrices() {
+        const usdPaid = parseFloat(document.getElementById('usdPaid').value) || 0;
+        const coinsReceived = parseFloat(document.getElementById('coinsReceived').value) || 1;
+        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 0;
+
+        // 1. تكلفة العملة الواحدة بالدولار
+        const coinCostUsd = usdPaid / coinsReceived;
+        document.getElementById('coinCostDisplay').value = coinCostUsd.toFixed(4);
+
+        // حساب تكلفة كل منتج
+        products.forEach((product, index) => {
+            // 2. التكلفة بالدولار للمنتج
+            const usdCost = product.costInCoins * coinCostUsd;
+            document.getElementById(`usdCost-${index}`).innerText = usdCost.toFixed(2);
+
+            // 3. التكلفة بالعملة المحلية
+            const localCost = usdCost * exchangeRate;
+            document.getElementById(`localCost-${index}`).innerText = Math.round(localCost).toLocaleString();
+
+            // 4. السعر النهائي
+            const finalPrice = localCost + product.profitMargin;
+            document.getElementById(`finalPrice-${index}`).innerText = Math.round(finalPrice).toLocaleString();
+        });
+    }
+
+    // تشغيل الكود عند تحميل الصفحة
+    window.onload = renderTable;
+</script>
+
+</body>
+</html>
