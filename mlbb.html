@@ -68,7 +68,7 @@
             color: white;
         }
         .product-input {
-            width: 70px;
+            width: 60px;
             text-align: center;
         }
         .highlight {
@@ -103,11 +103,11 @@
     <div class="store-info-grid">
         <div class="input-group">
             <label>رابط الموقع</label>
-            <input type="text" id="websiteUrl" value="arcadestore.net" placeholder="مثال: arcadestore.net">
+            <input type="text" id="websiteUrl" value="arcadestore.net" placeholder="مثال: arcadestore.net" oninput="saveDataLocally()">
         </div>
         <div class="input-group">
             <label>رقم الواتساب</label>
-            <input type="text" id="whatsappNum" value="" placeholder="مثال: +249123456789">
+            <input type="text" id="whatsappNum" value="" placeholder="مثال: +249123456789" oninput="saveDataLocally()">
         </div>
     </div>
 
@@ -139,7 +139,7 @@
                 <th>تكلفة المنصة</th>
                 <th>التكلفة ($)</th>
                 <th>التكلفة المحلي</th>
-                <th>الربح (+جنيه)</th>
+                <th>الربح (%)</th>
                 <th>سعر البيع</th>
             </tr>
         </thead>
@@ -153,28 +153,58 @@
 </div>
 
 <script>
-    // قائمة منتجات موبايل ليجندز فقط ومقسمة لفئات
-    const products = [
+    // قائمة منتجات موبايل ليجندز بوضع نسبة مئوية للربح (مثلاً 15%)
+    let products = [
         // المضاعفة لأول مرة
-        { name: '50+5', costInCoins: 0, profitMargin: 1000, category: 'المضاعفة لأول مرة' },
-        { name: '150+15', costInCoins: 0, profitMargin: 1500, category: 'المضاعفة لأول مرة' },
-        { name: '250+25', costInCoins: 0, profitMargin: 2000, category: 'المضاعفة لأول مرة' },
-        { name: '500+65', costInCoins: 0, profitMargin: 3000, category: 'المضاعفة لأول مرة' },
+        { name: '50+5', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لأول مرة' },
+        { name: '150+15', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لأول مرة' },
+        { name: '250+25', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لأول مرة' },
+        { name: '500+65', costInCoins: 0, profitMargin: 15, category: 'المضاعفة لأول مرة' },
         
         // العروض العادية
-        { name: '78+8', costInCoins: 0, profitMargin: 500, category: 'العروض العادية' },
-        { name: '156+16', costInCoins: 0, profitMargin: 1000, category: 'العروض العادية' },
-        { name: '234+23', costInCoins: 0, profitMargin: 1500, category: 'العروض العادية' },
-        { name: '625+81', costInCoins: 0, profitMargin: 2500, category: 'العروض العادية' },
-        { name: '1860+335', costInCoins: 0, profitMargin: 5000, category: 'العروض العادية' },
-        { name: '3099+589', costInCoins: 0, profitMargin: 8000, category: 'العروض العادية' },
-        { name: '4649+883', costInCoins: 0, profitMargin: 12000, category: 'العروض العادية' },
-        { name: '7740+1548', costInCoins: 0, profitMargin: 15000, category: 'العروض العادية' },
+        { name: '78+8', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '156+16', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '234+23', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '625+81', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '1860+335', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '3099+589', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '4649+883', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
+        { name: '7740+1548', costInCoins: 0, profitMargin: 15, category: 'العروض العادية' },
         
         // الاشتراكات والحزم
-        { name: 'Weekly Pass', costInCoins: 0, profitMargin: 1000, category: 'الاشتراكات والحزم' },
-        { name: 'حزمة الأزهار', costInCoins: 0, profitMargin: 1500, category: 'الاشتراكات والحزم' }
+        { name: 'Weekly Pass', costInCoins: 0, profitMargin: 15, category: 'الاشتراكات والحزم' },
+        { name: 'حزمة الأزهار', costInCoins: 0, profitMargin: 15, category: 'الاشتراكات والحزم' }
     ];
+
+    // استرجاع البيانات المحفوظة في المتصفح
+    function loadSavedData() {
+        const savedData = localStorage.getItem('arcadeStoreMLBB_v2');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            document.getElementById('usdPaid').value = data.usdPaid || 100;
+            document.getElementById('coinsReceived').value = data.coinsReceived || 10000;
+            document.getElementById('exchangeRate').value = data.exchangeRate || 2500;
+            document.getElementById('websiteUrl').value = data.websiteUrl || 'arcadestore.net';
+            document.getElementById('whatsappNum').value = data.whatsappNum || '';
+            
+            if (data.products && data.products.length === products.length) {
+                products = data.products;
+            }
+        }
+    }
+
+    // حفظ البيانات في المتصفح
+    function saveDataLocally() {
+        const dataToSave = {
+            usdPaid: document.getElementById('usdPaid').value,
+            coinsReceived: document.getElementById('coinsReceived').value,
+            exchangeRate: document.getElementById('exchangeRate').value,
+            websiteUrl: document.getElementById('websiteUrl').value,
+            whatsappNum: document.getElementById('whatsappNum').value,
+            products: products
+        };
+        localStorage.setItem('arcadeStoreMLBB_v2', JSON.stringify(dataToSave));
+    }
 
     function renderTable() {
         const tbody = document.getElementById('tableBody');
@@ -187,7 +217,7 @@
                 <td><input type="number" class="product-input" id="coins-${index}" value="${product.costInCoins}" oninput="updateProduct(${index}, 'costInCoins')"></td>
                 <td id="usdCost-${index}">0</td>
                 <td id="localCost-${index}">0</td>
-                <td><input type="number" class="product-input" id="profit-${index}" value="${product.profitMargin}" oninput="updateProduct(${index}, 'profitMargin')"></td>
+                <td><input type="number" class="product-input" id="profit-${index}" value="${product.profitMargin}" oninput="updateProduct(${index}, 'profitMargin')">%</td>
                 <td id="finalPrice-${index}" class="highlight">0</td>
             `;
             tbody.appendChild(tr);
@@ -210,16 +240,24 @@
         document.getElementById('coinCostDisplay').value = coinCostUsd.toFixed(4);
 
         products.forEach((product, index) => {
+            // التكلفة بالدولار
             const usdCost = product.costInCoins * coinCostUsd;
             document.getElementById(`usdCost-${index}`).innerText = usdCost.toFixed(2);
 
+            // التكلفة بالعملة المحلية
             const localCost = usdCost * exchangeRate;
             document.getElementById(`localCost-${index}`).innerText = Math.round(localCost).toLocaleString();
 
-            const finalPrice = localCost + product.profitMargin;
+            // حساب السعر النهائي بناءً على النسبة المئوية
+            // المعادلة: التكلفة + (التكلفة × النسبة / 100)
+            const profitPercentage = product.profitMargin / 100;
+            const finalPrice = localCost + (localCost * profitPercentage);
+            
             product.calculatedPrice = Math.round(finalPrice);
             document.getElementById(`finalPrice-${index}`).innerText = product.calculatedPrice.toLocaleString();
         });
+        
+        saveDataLocally();
     }
 
     function copyToWhatsApp() {
@@ -237,8 +275,8 @@
         for (const [category, items] of Object.entries(categories)) {
             text += `🔥 *${category}* 🔥\n`;
             items.forEach(item => {
-                // تجاهل المنتجات التي تكلفتها 0
-                if (item.calculatedPrice > item.profitMargin) {
+                // التأكد من أن التكلفة أكبر من صفر حتى يظهر في الرسالة
+                if (item.costInCoins > 0) {
                     text += `▪️ ${item.name} ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\n`;
                 }
             });
@@ -255,7 +293,11 @@
         });
     }
 
-    window.onload = renderTable;
+    // تشغيل دوال الاسترجاع ثم بناء الجدول عند تحميل الصفحة
+    window.onload = function() {
+        loadSavedData();
+        renderTable();
+    };
 </script>
 
 </body>
