@@ -198,7 +198,7 @@
 </div>
 
 <script>
-    // قاعدة البيانات الشاملة للمنتجات حسب طلبك
+    // قاعدة البيانات الشاملة للمنتجات
     let allGamesData = {
         "فري فاير": [
             { name: '110 diamond', costInCoins: 0, profitMargin: 15, category: 'الجواهر عبر الايدي ID' },
@@ -313,9 +313,9 @@
         ]
     };
 
-    let currentGame = "فري فاير"; // اللعبة الافتراضية
+    let currentGame = "فري فاير"; 
 
-    // استرجاع البيانات - تم تغيير مفتاح الحفظ لـ v2 عشان ينزل الداتا الجديدة
+    // استرجاع البيانات المحفوظة
     function loadSavedData() {
         const savedData = localStorage.getItem('arcadeStore_Dashboard_v2');
         if (savedData) {
@@ -326,9 +326,7 @@
             document.getElementById('websiteUrl').value = data.websiteUrl || 'arcadestore.net';
             document.getElementById('whatsappNum').value = data.whatsappNum || '';
             
-            // دمج البيانات
             if (data.allGamesData) {
-                // التأكد من استرجاع البيانات المحفوظة للألعاب الموجودة فقط
                 for (let game in allGamesData) {
                     if (data.allGamesData[game] && data.allGamesData[game].length === allGamesData[game].length) {
                         allGamesData[game] = data.allGamesData[game];
@@ -338,7 +336,7 @@
         }
     }
 
-    // حفظ كل البيانات
+    // حفظ البيانات
     function saveDataLocally() {
         const dataToSave = {
             usdPaid: document.getElementById('usdPaid').value,
@@ -410,11 +408,13 @@
         saveDataLocally();
     }
 
+    // دالة النسخ مع حل مشكلة الاتجاه في الواتساب
     function copyToWhatsApp() {
         const website = document.getElementById('websiteUrl').value || 'غير متوفر';
         const whatsapp = document.getElementById('whatsappNum').value || 'غير متوفر';
         
-        let text = `🎮 *عروض ${currentGame} من آركيد ستور* 🎮\n\n`;
+        // استخدام \u202B (RTL Embedding) و \u202C (Pop Directional Formatting) لإجبار الواتساب على عرض السطر من اليمين لليسار
+        let text = `\u202B🎮 *عروض ${currentGame} من آركيد ستور* 🎮\u202C\n\n`;
         
         const products = allGamesData[currentGame];
         const categories = {};
@@ -425,17 +425,18 @@
         });
 
         for (const [category, items] of Object.entries(categories)) {
-            text += `🔥 *${category}* 🔥\n`;
+            text += `\u202B🔥 *${category}* 🔥\u202C\n`;
             items.forEach(item => {
                 if (item.costInCoins > 0) { 
-                    text += `\u200F▪️ \u200F${item.name}\u200F ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\n`;
+                    // تغليف كل سطر بالكامل بخصائص الـ RTL
+                    text += `\u202B▪️ ${item.name} ⬅️ *${item.calculatedPrice.toLocaleString()}* جنيه\u202C\n`;
                 }
             });
             text += `\n`;
         }
 
-        text += `🌐 *للطلب عبر الموقع:* ${website}\n`;
-        text += `📱 *للتواصل واتسآب:* ${whatsapp}\n`;
+        text += `\u202B🌐 *للطلب عبر الموقع:* ${website}\u202C\n`;
+        text += `\u202B📱 *للتواصل واتسآب:* ${whatsapp}\u202C\n`;
 
         navigator.clipboard.writeText(text).then(() => {
             alert(`✅ تم نسخ عروض ${currentGame} بنجاح! جاهزة للصق في الواتساب.`);
